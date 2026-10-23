@@ -1,5 +1,9 @@
 # JSON HAL Server library
 
+[HAL developer specification](docs/pages/halSpec.md) and
+[detailed API and protocol reference](docs/pages/halSpecDetailed.md)
+document the complete public interface, ownership, transport limitations, and contract gaps.
+
 * JSON HAL Server Library.
 * Vendor Software can register their callbacks for certain well defined actions to the HAL server library. These callback will be invoked by the server library when we get client requests.
 * Vendor software can publish their events like link status to Server library.
@@ -14,9 +18,9 @@
 
 * int json_hal_server_init(const char *hal_conf_path) -> Initialize the hal server module. Pass the configuration file contains the schema path and server port as argument to the API.
 
-* int json_hal_server_register_action_callback(const char *action_name,(void*)callback) -> Register vendor software callback functions to the HAL server library.
-* void json_hal_server_run() -> Start the server socket thread. This will start the server socket and listen for client connections and requests.
-* int json_hal_server_publish_event(char *event_name, char *event_value) -> Publish events to the client. Application can send their event notifications to the subscribed clients.
+* int json_hal_server_register_action_callback(const char *action_name, const action_callback callback) -> Register a vendor action handler.
+* int json_hal_server_run() -> Start the server socket thread; returns a status.
+* int json_hal_server_publish_event(const char *event_name, const char *event_value) -> Publish an event to subscribed clients; see the detailed reference for payload limitations.
 
 ## Example usage
 
@@ -47,7 +51,7 @@
 ```
 ## How it works
 
-This server demon using unix tcp socket mechanism for IPC. And json-rpc using for the rpc mechanism.
+The server uses IPv4 TCP (`AF_INET`, `SOCK_STREAM`), binding to loopback at the configured port. This is not a Unix-domain socket, HTTP, or a standard JSON-RPC 2.0 envelope. Messages use the HAL-specific module/version/action/reqId envelope. The implementation does not provide robust stream framing; do not assume arbitrary TCP segmentation or coalescing is supported.
 
 When server socket received a request from the client, socket server main thread will invoke the registered callback function for processing message. This function will parse the json request and check for reqId and action name. Each request should have the request id and action name. And then check the global list of rpc supported functions to find the handler of the requested rpc method. If a match found, corresponding callback function being invoked and executed. It then responds back with the Json response. Once rpc_socket_process received the json response then it will send the buffer data back to client.
 
@@ -69,8 +73,8 @@ Its code depends with `json-c (0.11)`.
 ## Public APIs
 * int json_hal_client_init(const char *hal_conf_path) -> Initialize the hal client module. Pass the configuration file contains the schema path and server port as argument to the API.
 
-* int json_hal_client_send_and_get_reply(const char *request,json_object**  reply_msg ) -> Send the request message to the server socket, sync the response from server and return back the filled data to caller.
-* int json_hal_client_subscribe_event(event_callback callback, char* event_message) -> Register the callback function to notify for the events.
+* int json_hal_client_send_and_get_reply(const json_object *request, json_object **reply) -> Send a request and wait for its response.
+* int json_hal_client_subscribe_event(event_callback callback, const char *event_name, const char *event_notification_type) -> Register an event callback and subscribe using a schema-supported event path and notification type.
 * int json_hal_client_terminate() -> Clean up function.
 * int json_hal_is_client_connected() -> Check the client is successfully connected to the server.
 
@@ -123,13 +127,13 @@ int usage ()
 static int subscribe_event_message_success()
 {
     ...
-    rc = json_hal_client_subscribe_event(eventcb, msg);
+    rc = json_hal_client_subscribe_event(eventcb, event_name, event_notification_type);
     ..
 }
 ```
 ## How it works
 
-This client demon using unix tcp socket mechanism for IPC. And json-rpc using for the rpc mechanism.
+The client connects over IPv4 TCP using the HAL-specific JSON envelope described above. Event names and notification types must match the selected product schema; an action name alone does not establish product support.
 
 Manager application can init and start the client library. This will start the client socket and connected to the server socket.
 Manager can create json request and invoked json_hal_client_send_and_get_reply() call, This API is a blocking call, send the json request to server. Once API receive response
