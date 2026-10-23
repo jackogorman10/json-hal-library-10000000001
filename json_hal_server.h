@@ -130,7 +130,7 @@ int json_hal_get_subscribe_event_request(json_object *jmsg, int index, hal_subsc
 /**
  * @brief Server application can use this API to pack a getSchemaResponse message
  * @param (IN) jreply - Pointer to JSON reply object
- * @param (IN) param - Pointer to hal_getparam_response_t message
+ * @param[in] param Pointer to the hal_schema_response_t containing the schema filepath.
  * @return RETURN_OK in success case else RETURN_ERR.
  */
 int json_hal_add_schema_response(json_object *jreply, hal_schema_response_t *param);
@@ -138,7 +138,7 @@ int json_hal_add_schema_response(json_object *jreply, hal_schema_response_t *par
 /**
  * @brief Server application can use this API to pack add result status into the json response/
  * @param (IN) jreply - Pointer to JSON reply object
- * @param (IN) param - enum result which indicates SUCCESS or FAILURE.
+ * @param[in] result RESULT_SUCCESS or RESULT_FAILURE to encode in the result message.
  * @return RETURN_OK in success case else RETURN_ERR.
  */
 int json_hal_add_result_status(json_object *jreply, eResult_t result);

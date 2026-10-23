@@ -93,8 +93,8 @@ typedef struct _hal_param_t
  * @brief Application can use this API to unpack get/set/configure/delete JSON request
  * @param (IN) jmsg -  Pointer to JSON input object
  * @param (IN) index - Index of getParameter data in JSON request
- * @action (IN) action - Action type
- * @param (IN) param - Pointer to hal_param_t structure
+ * @param[in] action Action type selecting the message representation.
+ * @param[out] param Caller-provided hal_param_t receiving the extracted parameter.
  * @return RETURN_OK in success case else RETURN_ERR.
  */
 int json_hal_get_param(json_object *jmsg, int index, eActionType action, hal_param_t *param);
@@ -102,8 +102,9 @@ int json_hal_get_param(json_object *jmsg, int index, eActionType action, hal_par
 /**
  * @brief Application can use this API to pack
           JSON response message for get/set/configure/delete requests
- * @param (IN) jreply - Pointer to JSON reply object
- * @param (IN) param - Pointer to hal_getparam_response_t message
+ * @param[in,out] jreply JSON reply object to populate.
+ * @param[in] action Action type selecting the message representation.
+ * @param[in] param Parameter data in the declared hal_param_t representation.
  * @return RETURN_OK in success case else RETURN_ERR.
  */
 int json_hal_add_param(json_object *jreply, eActionType action, hal_param_t *param);

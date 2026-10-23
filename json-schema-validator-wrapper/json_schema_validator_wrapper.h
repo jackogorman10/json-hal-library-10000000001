@@ -33,25 +33,30 @@ typedef enum _ERROR_TYPE_
     VALIDATOR_RETURN_MEM_ALLOC_FAILED
 }error_type_t;
 
-/*
+/**
  * @brief - Initialise json schema validator. This API will
  * initialise the json_validator object for the validation.
- * @param Json schema path
- * @return RETURN_OK if initialisation successful else error code will return
+ * @param[in] json_schema_path Path to the JSON schema to load.
+ * @return VALIDATOR_RETURN_OK on success; a validator error code on failure.
  */
 int json_validator_init(const char *json_schema_path);
 
-/*
+/**
  * @brief - Delete the json_validator instance.
- * @return RETURN_OK if termination successful else error code will return
+ * @return VALIDATOR_RETURN_OK on success; a validator error code on failure.
  */
 int json_validator_terminate();
 
-/*
+/**
  * @brief - Validate the json sample given against the loaded schema. This string
  * will converted into json format and do the validation.
- * @param String holds the string which contains the json example message
- * @return RETURN_OK if validator successfull loads the schema else returned error code.
+ * @param[in] json_string Serialized JSON message to validate.
+ * @return VALIDATOR_RETURN_OK when validation succeeds;
+ * VALIDATOR_RETURN_INVALID_ARGUMENTS for a null input; VALIDATOR_RETURN_ERR
+ * for a reported schema validation failure.
+ * @warning Initialize successfully before calling. JSON parsing and validation
+ * exceptions are not caught by the implementation; malformed JSON is not
+ * guaranteed to produce a return code.
  */
 int json_validator_validate_request(const char *json_string);
 
